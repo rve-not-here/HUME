@@ -10,6 +10,7 @@ import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../theme/shadows.dart';
 import '../theme/border_radius.dart';
+import 'meditation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -251,7 +252,6 @@ class _AnimatedGreetingState extends State<_AnimatedGreeting>
 class _DailyAffirmation extends StatelessWidget {
   const _DailyAffirmation();
 
-  // FIXED: All emojis are now proper Unicode
   final List<String> _affirmations = const [
     'You are capable of amazing things today 🌟',
     'Every breath is a new beginning 💫',
@@ -366,14 +366,14 @@ class _QuickActionsGrid extends StatelessWidget {
           subtitle: 'Write your thoughts',
           icon: Iconsax.edit_2,
           gradient: AppColors.primaryGradient,
-          tabIndex: 2, // FIXED: Navigate to Journal tab
+          tabIndex: 2, // Navigate to Journal tab
         ),
         _ActionCard(
           title: 'Meditate',
           subtitle: 'Find your peace',
           icon: Iconsax.heart,
           gradient: AppColors.secondaryGradient,
-          showModal: true, // FIXED: Show modal instead
+          showModal: true, // Show MeditationScreen
         ),
         _ActionCard(
           title: 'Insights',
@@ -381,7 +381,7 @@ class _QuickActionsGrid extends StatelessWidget {
           icon: Iconsax.chart_2,
           gradient:
               LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]),
-          tabIndex: 3, // FIXED: Navigate to Insights tab
+          tabIndex: 3, // Navigate to Insights tab
         ),
         _BreathingActionCard(),
       ],
@@ -471,9 +471,17 @@ class _ActionCard extends StatelessWidget {
     );
   }
 
-  // FIXED: Proper navigation using NavigationController
   void _handleTap(BuildContext context) {
-    if (tabIndex != null) {
+    if (showModal) {
+      // Navigate to MeditationScreen for Meditate action
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MeditationScreen(),
+        ),
+      );
+    } else if (tabIndex != null) {
+      // Navigate to tab for Journal and Insights
       context.read<NavigationController>().navigateToTab(tabIndex!);
     }
   }

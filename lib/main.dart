@@ -1,7 +1,7 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/mood_service.dart';
-import 'services/local_storage.dart';
 import 'navigation/navigation_controller.dart';
 import 'screens/main_navigation_screen.dart';
 import 'theme/app_theme.dart';
@@ -9,10 +9,6 @@ import 'theme/colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final localStorage = LocalStorageService();
-  await localStorage.init();
-
   runApp(const MyApp());
 }
 
@@ -21,7 +17,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FIXED: Added NavigationController to providers
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -70,7 +65,6 @@ class AppLoadingScreen extends StatelessWidget {
       );
     }
 
-    // FIXED: Show error state if initialization failed
     if (moodService.errorMessage != null) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -97,6 +91,17 @@ class AppLoadingScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => moodService.initialize(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],

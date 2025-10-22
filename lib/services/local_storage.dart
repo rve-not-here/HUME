@@ -18,12 +18,25 @@ class LocalStorageService {
     final appDocumentDir = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDir.path);
 
-    Hive.registerAdapter(MoodEntryAdapter());
-    Hive.registerAdapter(JournalEntryAdapter());
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(MoodEntryAdapter());
+    }
 
-    await Hive.openBox<MoodEntry>(_moodBoxName);
-    await Hive.openBox<JournalEntry>(_journalBoxName);
-    await Hive.openBox(_settingsBoxName);
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(JournalEntryAdapter());
+    }
+
+    if (!Hive.isBoxOpen(_moodBoxName)) {
+      await Hive.openBox<MoodEntry>(_moodBoxName);
+    }
+
+    if (!Hive.isBoxOpen(_journalBoxName)) {
+      await Hive.openBox<JournalEntry>(_journalBoxName);
+    }
+
+    if (!Hive.isBoxOpen(_settingsBoxName)) {
+      await Hive.openBox(_settingsBoxName);
+    }
 
     _isInitialized = true;
   }
@@ -70,7 +83,6 @@ class LocalStorageService {
     return box.get(key, defaultValue: defaultValue);
   }
 
-  // FIXED: Returns proper JSON string instead of toString()
   Future<String> exportData() async {
     final moodEntries = await getMoodEntries();
     final journalEntries = await getJournalEntries();
