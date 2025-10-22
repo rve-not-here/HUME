@@ -70,6 +70,7 @@ class LocalStorageService {
     return box.get(key, defaultValue: defaultValue);
   }
 
+  // FIXED: Returns proper JSON string instead of toString()
   Future<String> exportData() async {
     final moodEntries = await getMoodEntries();
     final journalEntries = await getJournalEntries();

@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/mood_service.dart';
@@ -71,6 +70,7 @@ class AppLoadingScreen extends StatelessWidget {
       );
     }
 
+    // FIXED: Show error state if initialization failed
     if (moodService.errorMessage != null) {
       return Scaffold(
         backgroundColor: AppColors.background,

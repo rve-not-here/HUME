@@ -22,13 +22,13 @@ class MoodChart extends StatelessWidget {
   Widget _buildMoodBar(MoodEntry entry, BuildContext context) {
     return Container(
       width: 60,
-      margin: EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
             '${entry.intensity}',
-            style: TextStyle(fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
           Container(
             height: entry.intensity * 20.0,
@@ -38,14 +38,14 @@ class MoodChart extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             _getDayAbbreviation(entry.dateTime),
-            style: TextStyle(fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
           Text(
             _getMoodEmoji(entry.mood),
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ],
       ),

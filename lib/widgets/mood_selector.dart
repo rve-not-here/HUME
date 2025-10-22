@@ -25,7 +25,7 @@ class _MoodSelectorState extends State<MoodSelector> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
+        const Text(
           'Select how you\'re feeling',
           style: TextStyle(
             fontSize: 16,
@@ -33,7 +33,7 @@ class _MoodSelectorState extends State<MoodSelector> {
             color: AppColors.textPrimary,
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -45,12 +45,12 @@ class _MoodSelectorState extends State<MoodSelector> {
             return _buildMoodChip(label, emoji, color);
           }).toList(),
         ),
-        SizedBox(height: 24),
+        const SizedBox(height: 24),
         if (_selectedMood != null) ...[
           _buildIntensitySelector(),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           _buildNoteInput(),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           _buildSaveButton(context),
         ],
       ],
@@ -67,10 +67,10 @@ class _MoodSelectorState extends State<MoodSelector> {
         });
       },
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color : color.withOpacity(0.1),
+          color: isSelected ? color : color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -79,9 +79,9 @@ class _MoodSelectorState extends State<MoodSelector> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
+                    color: color.withValues(alpha: 0.3),
                     blurRadius: 8,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : [],
@@ -91,9 +91,9 @@ class _MoodSelectorState extends State<MoodSelector> {
           children: [
             Text(
               emoji,
-              style: TextStyle(fontSize: 20),
+              style: const TextStyle(fontSize: 20),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
@@ -114,15 +114,15 @@ class _MoodSelectorState extends State<MoodSelector> {
       children: [
         Text(
           'Intensity: $_intensity/5',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
@@ -130,13 +130,13 @@ class _MoodSelectorState extends State<MoodSelector> {
           child: SliderTheme(
             data: SliderThemeData(
               trackHeight: 6,
-              thumbShape: RoundSliderThumbShape(
+              thumbShape: const RoundSliderThumbShape(
                 enabledThumbRadius: 12,
                 disabledThumbRadius: 8,
               ),
-              overlayShape: RoundSliderOverlayShape(overlayRadius: 20),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               activeTrackColor: _getSelectedMoodColor(),
-              inactiveTrackColor: AppColors.textDisabled.withOpacity(0.3),
+              inactiveTrackColor: AppColors.textDisabled.withValues(alpha: 0.3),
               thumbColor: _getSelectedMoodColor(),
             ),
             child: Slider(
@@ -152,7 +152,7 @@ class _MoodSelectorState extends State<MoodSelector> {
             ),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(5, (index) {
@@ -175,7 +175,7 @@ class _MoodSelectorState extends State<MoodSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Add a note (optional)',
           style: TextStyle(
             fontSize: 16,
@@ -183,16 +183,16 @@ class _MoodSelectorState extends State<MoodSelector> {
             color: AppColors.textPrimary,
           ),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         TextField(
           controller: _noteController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'What\'s making you feel this way?',
             filled: true,
             fillColor: AppColors.surface,
           ),
           maxLines: 3,
-          style: TextStyle(fontSize: 14),
+          style: const TextStyle(fontSize: 14),
         ),
       ],
     );
@@ -204,11 +204,11 @@ class _MoodSelectorState extends State<MoodSelector> {
       style: ElevatedButton.styleFrom(
         backgroundColor: _getSelectedMoodColor(),
         foregroundColor: Colors.white,
-        minimumSize: Size(double.infinity, 56),
+        minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
       ),
-      child: Text(
+      child: const Text(
         'Save Mood Entry',
         style: TextStyle(
           fontSize: 16,
@@ -243,7 +243,7 @@ class _MoodSelectorState extends State<MoodSelector> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Mood saved successfully!'),
+          content: const Text('Mood saved successfully!'),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

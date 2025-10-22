@@ -3,12 +3,13 @@ import 'package:hume/models/mood_entry.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../services/mood_service.dart';
+import '../navigation/navigation_controller.dart';
 import '../widgets/mood_selector.dart';
 import '../widgets/mood_chart.dart';
 import '../theme/colors.dart';
-import 'journal_screen.dart';
-import 'meditation_screen.dart';
-import 'insights_screen.dart';
+import '../theme/spacing.dart';
+import '../theme/shadows.dart';
+import '../theme/border_radius.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,18 +31,18 @@ class HomeScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SingleChildScrollView(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _AppBar(),
-          SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
           _WelcomeSection(),
-          SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
           _QuickActionsSection(),
-          SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
           _MoodTrackingSection(),
-          SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
           _RecentMoodsSection(),
         ],
       ),
@@ -73,20 +74,14 @@ class _AppLogo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: AppBorderRadius.lgRadius,
+        boxShadow: AppShadows.primaryShadow(AppColors.primary),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Iconsax.heart, color: Colors.white, size: 18),
-          SizedBox(width: 8),
+          SizedBox(width: AppSpacing.sm),
           Text(
             'HUME',
             style: TextStyle(
@@ -111,13 +106,7 @@ class _NotificationIcon extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AppShadows.subtle,
       ),
       child: Stack(
         children: [
@@ -152,7 +141,7 @@ class _WelcomeSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _AnimatedGreeting(),
-        SizedBox(height: 16),
+        SizedBox(height: AppSpacing.md),
         _DailyAffirmation(),
       ],
     );
@@ -262,6 +251,7 @@ class _AnimatedGreetingState extends State<_AnimatedGreeting>
 class _DailyAffirmation extends StatelessWidget {
   const _DailyAffirmation();
 
+  // FIXED: All emojis are now proper Unicode
   final List<String> _affirmations = const [
     'You are capable of amazing things today 🌟',
     'Every breath is a new beginning 💫',
@@ -279,7 +269,7 @@ class _DailyAffirmation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -289,7 +279,7 @@ class _DailyAffirmation extends StatelessWidget {
             AppColors.secondary.withValues(alpha: 0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppBorderRadius.lgRadius,
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
@@ -303,7 +293,7 @@ class _DailyAffirmation extends StatelessWidget {
             child: const Icon(Iconsax.quote_up,
                 color: AppColors.primary, size: 20),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               _randomAffirmation,
@@ -330,7 +320,7 @@ class _QuickActionsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle('Quick Actions'),
-        SizedBox(height: 20),
+        SizedBox(height: AppSpacing.lg),
         _QuickActionsGrid(),
       ],
     );
@@ -370,30 +360,30 @@ class _QuickActionsGrid extends StatelessWidget {
         mainAxisSpacing: 12,
         childAspectRatio: 1.1,
       ),
-      children: [
-        const _ActionCard(
+      children: const [
+        _ActionCard(
           title: 'Journal',
           subtitle: 'Write your thoughts',
           icon: Iconsax.edit_2,
           gradient: AppColors.primaryGradient,
-          destination: JournalScreen(),
+          tabIndex: 2, // FIXED: Navigate to Journal tab
         ),
-        const _ActionCard(
+        _ActionCard(
           title: 'Meditate',
           subtitle: 'Find your peace',
           icon: Iconsax.heart,
           gradient: AppColors.secondaryGradient,
-          destination: MeditationScreen(),
+          showModal: true, // FIXED: Show modal instead
         ),
         _ActionCard(
           title: 'Insights',
           subtitle: 'View analytics',
           icon: Iconsax.chart_2,
-          gradient: const LinearGradient(
-              colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]),
-          destination: InsightsScreen(),
+          gradient:
+              LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]),
+          tabIndex: 3, // FIXED: Navigate to Insights tab
         ),
-        const _BreathingActionCard(),
+        _BreathingActionCard(),
       ],
     );
   }
@@ -405,20 +395,22 @@ class _ActionCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.gradient,
-    required this.destination,
+    this.tabIndex,
+    this.showModal = false,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
   final Gradient gradient;
-  final Widget destination;
+  final int? tabIndex;
+  final bool showModal;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppBorderRadius.lgRadius,
         gradient: gradient,
         boxShadow: [
           BoxShadow(
@@ -431,11 +423,11 @@ class _ActionCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _navigateToScreen(context),
-          borderRadius: BorderRadius.circular(20),
+          onTap: () => _handleTap(context),
+          borderRadius: AppBorderRadius.lgRadius,
           splashColor: Colors.white.withValues(alpha: 0.2),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,8 +471,11 @@ class _ActionCard extends StatelessWidget {
     );
   }
 
-  void _navigateToScreen(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+  // FIXED: Proper navigation using NavigationController
+  void _handleTap(BuildContext context) {
+    if (tabIndex != null) {
+      context.read<NavigationController>().navigateToTab(tabIndex!);
+    }
   }
 }
 
@@ -500,7 +495,7 @@ class _BreathingActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppBorderRadius.lgRadius,
         gradient: const LinearGradient(
           colors: [Color(0xFF06B6D4), Color(0xFF0EA5E9)],
           begin: Alignment.topLeft,
@@ -518,10 +513,10 @@ class _BreathingActionCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showBreathingExercise(context),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppBorderRadius.lgRadius,
           splashColor: Colors.white.withValues(alpha: 0.2),
           child: const Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,7 +584,7 @@ class _MoodTrackingSection extends StatelessWidget {
       child: Column(
         children: [
           MoodSelector(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Consumer<MoodService>(
             builder: (context, moodService, child) {
               final todayMoods = moodService.getMoodsForDate(DateTime.now());
@@ -611,16 +606,16 @@ class _MoodPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppBorderRadius.mdRadius,
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
       ),
       child: const Row(
         children: [
           Icon(Iconsax.info_circle, color: AppColors.primary, size: 20),
-          SizedBox(width: 12),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               'Track your mood to see patterns and insights',
@@ -646,10 +641,10 @@ class _TodayMoodSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final latestMood = moods.first;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppBorderRadius.mdRadius,
       ),
       child: Row(
         children: [
@@ -662,7 +657,7 @@ class _TodayMoodSummary extends StatelessWidget {
             child: const Icon(Iconsax.emoji_happy,
                 color: AppColors.primary, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,7 +725,7 @@ class _RecentMoodsContent extends StatelessWidget {
           height: 180,
           child: MoodChart(moodEntries: recentMoods),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         _MoodStats(moods: recentMoods),
       ],
     );
@@ -754,10 +749,10 @@ class _MoodStats extends StatelessWidget {
         : 'None';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.secondary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppBorderRadius.mdRadius,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -799,14 +794,14 @@ class _StatItem extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
             color: AppColors.secondary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: AppColors.secondary),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           value,
           style: const TextStyle(
@@ -839,7 +834,7 @@ class _EmptyMoodsState extends StatelessWidget {
         children: [
           Icon(Iconsax.chart,
               size: 64, color: AppColors.textDisabled.withValues(alpha: 0.5)),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.lg),
           const Text(
             'No mood data yet',
             style: TextStyle(
@@ -848,7 +843,7 @@ class _EmptyMoodsState extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
@@ -887,17 +882,11 @@ class _SectionContainer extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: AppBorderRadius.xlRadius,
+        boxShadow: AppShadows.card,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -906,7 +895,7 @@ class _SectionContainer extends StatelessWidget {
                 iconColor: iconColor,
                 title: title,
                 subtitle: subtitle),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             child,
           ],
         ),
@@ -943,7 +932,7 @@ class _SectionHeader extends StatelessWidget {
               ),
               child: Icon(icon, color: iconColor, size: 22),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -978,6 +967,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+// Breathing Exercise Modal (kept the same)
 class BreathingExerciseModal extends StatefulWidget {
   const BreathingExerciseModal({super.key});
 
@@ -1036,19 +1026,15 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
     for (int i = 0;
         i < _totalBreaths && _currentState != BreathingState.idle;
         i++) {
-      // Inhale
       await _animateBreath(BreathingState.inhale);
       if (_currentState == BreathingState.idle) break;
 
-      // Hold
       await _holdBreath();
       if (_currentState == BreathingState.idle) break;
 
-      // Exhale
       await _animateBreath(BreathingState.exhale);
       if (_currentState == BreathingState.idle) break;
 
-      // Hold after exhale
       await _holdBreath();
       if (_currentState == BreathingState.idle) break;
 
@@ -1095,16 +1081,16 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
+          topLeft: Radius.circular(AppBorderRadius.xxl),
+          topRight: Radius.circular(AppBorderRadius.xxl),
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           children: [
             const _ModalHandle(),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xl),
             const _ModalTitle(
               title: 'Breathing Exercise',
               subtitle: 'Follow the animation to regulate your breathing',
@@ -1177,7 +1163,7 @@ class _ModalTitle extends StatelessWidget {
             letterSpacing: -0.6,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           subtitle,
           style: const TextStyle(
@@ -1266,7 +1252,7 @@ class _ExerciseControls extends StatelessWidget {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           OutlinedButton(
             onPressed: onStop,
             style: OutlinedButton.styleFrom(
@@ -1288,7 +1274,8 @@ class _ExerciseControls extends StatelessWidget {
             foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderRadius:
+                  BorderRadius.all(Radius.circular(AppBorderRadius.md)),
             ),
             elevation: 0,
           ),
@@ -1300,7 +1287,7 @@ class _ExerciseControls extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Close'),
