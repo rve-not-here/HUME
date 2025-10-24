@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../services/mood_service.dart';
 import '../theme/colors.dart';
+import '../services/auth_service.dart';
+import '../services/local_storage.dart';
+import '../screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -30,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                _buildProfileHeader(),
+                _buildProfileHeader(context), // Pass context here
                 const SizedBox(height: 32),
                 _buildQuickStats(stats),
                 const SizedBox(height: 24),
@@ -47,7 +50,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Column(
       children: [
         // Profile Avatar
@@ -74,9 +79,11 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Alex Morgan',
-          style: TextStyle(
+
+        // Username
+        Text(
+          authService.username,
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
@@ -106,7 +113,103 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 16),
+
+        // Edit Profile Button
+        OutlinedButton.icon(
+          onPressed: () => _showEditNameDialog(context),
+          icon: const Icon(Iconsax.edit, size: 16),
+          label: const Text('Edit Name'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showEditNameDialog(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final controller = TextEditingController(text: authService.username);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Name'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Your Name',
+            border: OutlineInputBorder(),
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                authService.updateUsername(controller.text.trim());
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Name updated successfully'),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final authService =
+                  Provider.of<AuthService>(context, listen: false);
+              await authService.logout();
+
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -419,6 +522,11 @@ class ProfileScreen extends StatelessWidget {
               'About Hume',
               Iconsax.info_circle,
               () => _showAbout(context),
+            ),
+            _buildSupportItem(
+              'Logout',
+              Iconsax.logout,
+              () => _showLogoutDialog(context),
             ),
           ],
         ),

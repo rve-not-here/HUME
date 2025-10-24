@@ -1,8 +1,9 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/mood_service.dart';
+import 'services/auth_service.dart';
 import 'navigation/navigation_controller.dart';
+import 'screens/login_screen.dart';
 import 'screens/main_navigation_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/colors.dart';
@@ -20,10 +21,13 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => MoodService()..initialize(),
+          create: (context) => AuthService()..initialize(),
         ),
         ChangeNotifierProvider(
           create: (context) => NavigationController(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MoodService()..initialize(),
         ),
       ],
       child: MaterialApp(
@@ -41,9 +45,11 @@ class AppLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
     final moodService = Provider.of<MoodService>(context);
 
-    if (moodService.isLoading) {
+    // Show loading screen while initializing
+    if (authService.isLoading || moodService.isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
@@ -53,10 +59,11 @@ class AppLoadingScreen extends StatelessWidget {
               CircularProgressIndicator(color: AppColors.primary),
               SizedBox(height: 20),
               Text(
-                'Loading your emotional data...',
+                'Loading HUME...',
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -65,6 +72,7 @@ class AppLoadingScreen extends StatelessWidget {
       );
     }
 
+    // Show error screen if mood service failed
     if (moodService.errorMessage != null) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -109,6 +117,11 @@ class AppLoadingScreen extends StatelessWidget {
           ),
         ),
       );
+    }
+
+    // Route based on login status
+    if (!authService.isLoggedIn) {
+      return const LoginScreen();
     }
 
     return const MainNavigationScreen();

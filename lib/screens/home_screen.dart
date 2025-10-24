@@ -11,6 +11,7 @@ import '../theme/spacing.dart';
 import '../theme/shadows.dart';
 import '../theme/border_radius.dart';
 import 'meditation_screen.dart';
+import '../services/auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -40,7 +41,7 @@ class HomeScreenContent extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           _WelcomeSection(),
           SizedBox(height: AppSpacing.xl),
-          _QuickActionsSection(),
+          _QuickActionsGridSection(),
           SizedBox(height: AppSpacing.xl),
           _MoodTrackingSection(),
           SizedBox(height: AppSpacing.xl),
@@ -196,6 +197,9 @@ class _AnimatedGreetingState extends State<_AnimatedGreeting>
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final userName = authService.firstName;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -216,9 +220,9 @@ class _AnimatedGreetingState extends State<_AnimatedGreeting>
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Row(
+                Row(
                   children: [
-                    Text(
+                    const Text(
                       'Hello, ',
                       style: TextStyle(
                         fontSize: 32,
@@ -228,14 +232,17 @@ class _AnimatedGreetingState extends State<_AnimatedGreeting>
                         height: 1.1,
                       ),
                     ),
-                    Text(
-                      'Admin!',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                        letterSpacing: -0.8,
-                        height: 1.1,
+                    Flexible(
+                      child: Text(
+                        '$userName!',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                          letterSpacing: -0.8,
+                          height: 1.1,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -311,80 +318,601 @@ class _DailyAffirmation extends StatelessWidget {
   }
 }
 
-class _QuickActionsSection extends StatelessWidget {
-  const _QuickActionsSection();
+class _QuickActionsGridSection extends StatelessWidget {
+  const _QuickActionsGridSection();
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionTitle('Quick Actions'),
-        SizedBox(height: AppSpacing.lg),
-        _QuickActionsGrid(),
-      ],
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 400,
+      ),
+      child: GridView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.1,
+        ),
+        children: [
+          _ActionCard(
+            title: 'Meditate',
+            subtitle: 'Find your peace',
+            icon: Iconsax.heart,
+            gradient: AppColors.primaryGradient,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MeditationScreen(),
+                ),
+              );
+            },
+          ),
+          _ActionCard(
+            title: 'Breathing',
+            subtitle: 'Calm your mind',
+            icon: Iconsax.wind,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF06B6D4), Color(0xFF0EA5E9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => const BreathingExerciseModal(),
+              );
+            },
+          ),
+          _ActionCard(
+            title: 'Gratitude',
+            subtitle: 'Count your blessings',
+            icon: Iconsax.heart_add,
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            onTap: () {
+              _showGratitudePrompt(context);
+            },
+          ),
+          _ActionCard(
+            title: 'Self-Care',
+            subtitle: 'Quick wellness tips',
+            icon: Iconsax.lovely,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF10B981), Color(0xFF34D399)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            onTap: () {
+              _showSelfCareTips(context);
+            },
+          ),
+        ],
+      ),
     );
   }
-}
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
+  void _showGratitudePrompt(BuildContext context) {
+    final TextEditingController gratitudeController = TextEditingController();
 
-  final String title;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppBorderRadius.xxl),
+            topRight: Radius.circular(AppBorderRadius.xxl),
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.xl,
+            right: AppSpacing.xl,
+            top: AppSpacing.xl,
+            bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+          ),
+          child: Column(
+            children: [
+              // Handle
+              Container(
+                width: 60,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textDisabled.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-        letterSpacing: -0.4,
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Iconsax.heart_add,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              const Text(
+                'Gratitude Journal',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.6,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              const Text(
+                'What are you grateful for today?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Input Field
+              Expanded(
+                child: TextField(
+                  controller: gratitudeController,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: const InputDecoration(
+                    hintText:
+                        'I am grateful for...\n\n• My health\n• My family\n• Today\'s sunshine',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Save Button
+              ElevatedButton(
+                onPressed: () {
+                  if (gratitudeController.text.trim().isNotEmpty) {
+                    // Save to journal or separate gratitude list
+                    final moodService =
+                        Provider.of<MoodService>(context, listen: false);
+                    moodService.addJournalEntry(
+                      title:
+                          '🙏 Gratitude - ${DateTime.now().day}/${DateTime.now().month}',
+                      content: gratitudeController.text.trim(),
+                      mood: '😊 Happy',
+                    );
+
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Gratitude saved! 🙏'),
+                        backgroundColor: const Color(0xFFF59E0B),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF59E0B),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Save Gratitude',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSelfCareTips(BuildContext context) {
+    final List<Map<String, dynamic>> tips = [
+      {
+        'title': 'Take a Walk',
+        'description': '10-15 minutes outdoors can boost your mood and energy',
+        'icon': Iconsax.activity1,
+        'color': const Color(0xFF10B981),
+        'duration': '15 min',
+      },
+      {
+        'title': 'Drink Water',
+        'description': 'Stay hydrated for better focus and mental clarity',
+        'icon': Iconsax.cup,
+        'color': const Color(0xFF06B6D4),
+        'duration': '2 min',
+      },
+      {
+        'title': 'Stretch',
+        'description': 'Release physical tension and improve circulation',
+        'icon': Iconsax.activity,
+        'color': const Color(0xFF8B5CF6),
+        'duration': '5 min',
+      },
+      {
+        'title': 'Connect',
+        'description': 'Reach out to someone who makes you feel good',
+        'icon': Iconsax.message_favorite,
+        'color': const Color(0xFFEF4444),
+        'duration': '10 min',
+      },
+      {
+        'title': 'Power Nap',
+        'description': 'A short rest can recharge your mind and body',
+        'icon': Iconsax.moon,
+        'color': const Color(0xFF6366F1),
+        'duration': '20 min',
+      },
+      {
+        'title': 'Listen to Music',
+        'description': 'Play your favorite uplifting songs and unwind',
+        'icon': Iconsax.music,
+        'color': const Color(0xFFF59E0B),
+        'duration': '10 min',
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.88,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppBorderRadius.xxl),
+            topRight: Radius.circular(AppBorderRadius.xxl),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Header Section with gradient background
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF10B981).withValues(alpha: 0.1),
+                    const Color(0xFF34D399).withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(AppBorderRadius.xxl),
+                  topRight: Radius.circular(AppBorderRadius.xxl),
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                  ),
+                  child: Column(
+                    children: [
+                      // Handle
+                      Container(
+                        width: 60,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textDisabled.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      // Animated Icon
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: value,
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF10B981),
+                                    Color(0xFF34D399)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: 0.4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Iconsax.lovely,
+                                size: 48,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      const Text(
+                        'Self-Care Menu',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.8,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Choose what feels right today',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF10B981),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Tips Grid
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: tips.length,
+                itemBuilder: (context, index) {
+                  final tip = tips[index];
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: Opacity(
+                          opacity: value,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: _SelfCareTipCard(tip: tip),
+                  );
+                },
+              ),
+            ),
+
+            // Bottom Action
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                0,
+                AppSpacing.xl,
+                AppSpacing.xl,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Iconsax.arrow_left_2, size: 20),
+                      label: const Text('Back'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(
+                          color: AppColors.textDisabled.withValues(alpha: 0.3),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _QuickActionsGrid extends StatelessWidget {
-  const _QuickActionsGrid();
+class _SelfCareTipCard extends StatelessWidget {
+  final Map<String, dynamic> tip;
+
+  const _SelfCareTipCard({required this.tip});
 
   @override
   Widget build(BuildContext context) {
-    return GridView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.1,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      children: const [
-        _ActionCard(
-          title: 'Journal',
-          subtitle: 'Write your thoughts',
-          icon: Iconsax.edit_2,
-          gradient: AppColors.primaryGradient,
-          tabIndex: 2, // Navigate to Journal tab
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // Could trigger specific actions here
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${tip['title']} - ${tip['duration']}'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: tip['color'],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon and Duration Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            tip['color'],
+                            tip['color'].withOpacity(0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: tip['color'].withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        tip['icon'],
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tip['color'].withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        tip['duration'],
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: tip['color'],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+
+                // Title
+                Text(
+                  tip['title'],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // Description
+                Text(
+                  tip['description'],
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ),
-        _ActionCard(
-          title: 'Meditate',
-          subtitle: 'Find your peace',
-          icon: Iconsax.heart,
-          gradient: AppColors.secondaryGradient,
-          showModal: true, // Show MeditationScreen
-        ),
-        _ActionCard(
-          title: 'Insights',
-          subtitle: 'View analytics',
-          icon: Iconsax.chart_2,
-          gradient:
-              LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]),
-          tabIndex: 3, // Navigate to Insights tab
-        ),
-        _BreathingActionCard(),
-      ],
+      ),
     );
   }
 }
@@ -395,16 +923,14 @@ class _ActionCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.gradient,
-    this.tabIndex,
-    this.showModal = false,
+    required this.onTap,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
   final Gradient gradient;
-  final int? tabIndex;
-  final bool showModal;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -423,34 +949,37 @@ class _ActionCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _handleTap(context),
+          onTap: onTap,
           borderRadius: AppBorderRadius.lgRadius,
           splashColor: Colors.white.withValues(alpha: 0.2),
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: Colors.white, size: 26),
+                  child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -460,6 +989,8 @@ class _ActionCard extends StatelessWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -468,113 +999,6 @@ class _ActionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  void _handleTap(BuildContext context) {
-    if (showModal) {
-      // Navigate to MeditationScreen for Meditate action
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MeditationScreen(),
-        ),
-      );
-    } else if (tabIndex != null) {
-      // Navigate to tab for Journal and Insights
-      context.read<NavigationController>().navigateToTab(tabIndex!);
-    }
-  }
-}
-
-class _BreathingActionCard extends StatelessWidget {
-  const _BreathingActionCard();
-
-  void _showBreathingExercise(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => const BreathingExerciseModal(),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: AppBorderRadius.lgRadius,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0EA5E9)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showBreathingExercise(context),
-          borderRadius: AppBorderRadius.lgRadius,
-          splashColor: Colors.white.withValues(alpha: 0.2),
-          child: const Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _ActionIcon(icon: Iconsax.wind),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Breathing',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Calm your mind',
-                      style: TextStyle(
-                        color: Color(0xFFE0E0E0),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionIcon extends StatelessWidget {
-  const _ActionIcon({required this.icon});
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: Colors.white, size: 26),
     );
   }
 }
@@ -975,7 +1399,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// Breathing Exercise Modal (kept the same)
 class BreathingExerciseModal extends StatefulWidget {
   const BreathingExerciseModal({super.key});
 
